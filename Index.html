@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHREYA • A Netflix Birthday Original</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Bebas Neue for iconic Netflix display headers & Inter for clean UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+	:root {
+	  --netflix-red: #E50914;
+	  --netflix-dark: #141414;
+	  --netflix-card: #1f1f1f;
+	}
+
+	* {
+	  box-sizing: border-box;
+	  -webkit-tap-highlight-color: transparent;
+	}
+
+	body {
+	  margin: 0;
+	  padding: 0;
+	  background-color: #000000;
+	  color: #ffffff;
+	  font-family: 'Inter', sans-serif;
+	  overflow-x: hidden;
+	  user-select: none;
+	}
+
+	.font-bebas {
+	  font-family: 'Bebas Neue', sans-serif;
+	  letter-spacing: 0.06em;
+	}
+
+	/* ==========================================
+	   SCREEN 1: 6-PART HERO POSTER STYLES
+	   ========================================== */
+	.poster-grid {
+	  display: flex;
+	  width: 100vw;
+	  height: 100vh;
+	  overflow: hidden;
+	  background: #000;
+	  position: relative;
+	}
+
+	.poster-slice {
+	  position: relative;
+	  flex: 1;
+	  height: 100%;
+	  overflow: hidden;
+	  cursor: pointer;
+	  border-right: 1px solid rgba(255, 255, 255, 0.08);
+	  transition:
+		flex 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.7s ease,
+		filter 0.5s ease;
+	}
+
+	.poster-slice:last-child {
+	  border-right: none;
+	}
+
+	/* Hover / Active expansion effect */
+	.poster-grid:hover .poster-slice {
+	  filter: brightness(0.65) saturate(0.85);
+	}
+
+	.poster-grid .poster-slice:hover,
+	.poster-grid .poster-slice.slice-active {
+	  flex: 1.85;
+	  filter: brightness(1.08) saturate(1.15);
+	  z-index: 10;
+	}
+
+	.slice-bg {
+	  position: absolute;
+	  inset: 0;
+	  width: 100%;
+	  height: 100%;
+	  object-fit: cover;
+	  object-position: center 25%;
+	  transform: scale(1.04);
+	  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), filter 0.6s ease;
+	  filter: brightness(0.72) contrast(1.08);
+	}
+
+	.poster-slice:hover .slice-bg,
+	.poster-slice.slice-active .slice-bg {
+	  transform: scale(1.12);
+	  filter: brightness(0.95) contrast(1.08);
+	}
+
+	/* Cinematic dark top/bottom vignette on each slice */
+	.slice-vignette {
+	  position: absolute;
+	  inset: 0;
+	  background: linear-gradient(
+		180deg,
+		rgba(0, 0, 0, 0.45) 0%,
+		rgba(0, 0, 0, 0.08) 35%,
+		rgba(0, 0, 0, 0.12) 65%,
+		rgba(0, 0, 0, 0.78) 100%
+	  );
+	  pointer-events: none;
+	}
+
+	/* Hover-only caption pill below each letter */
+	.slice-caption-pill {
+	  opacity: 0;
+	  transform: translateY(10px);
+	  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.poster-slice:hover .slice-caption-pill,
+	.poster-slice.slice-active .slice-caption-pill {
+	  opacity: 1;
+	  transform: translateY(0);
+	}
+
+	/* Giant 3D Netflix-red letter on each slice */
+	.slice-letter {
+	  font-family: 'Bebas Neue', sans-serif;
+	  font-size: clamp(3.6rem, 9vw, 8.8rem);
+	  line-height: 1;
+	  color: #ffffff;
+	  text-shadow:
+		0 4px 0 #b80710,
+		0 8px 0 #8a040b,
+		0 14px 30px rgba(229, 9, 20, 0.65),
+		0 0 40px rgba(0, 0, 0, 0.9);
+	  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease, text-shadow 0.4s ease;
+	}
+
+	.poster-slice:hover .slice-letter,
+	.poster-slice.slice-active .slice-letter {
+	  transform: translateY(-12px) scale(1.12);
+	  color: #E50914;
+	  text-shadow:
+		0 4px 0 #ffffff,
+		0 10px 35px rgba(229, 9, 20, 0.95),
+		0 0 60px rgba(229, 9, 20, 0.8);
+	}
+
+	/* Slice Pop & S-Curve Convergence Animation when "Show More" is clicked */
+	.poster-grid.converging-s .poster-slice {
+	  pointer-events: none;
+	}
+
+	.poster-grid.converging-s .poster-slice:nth-child(1) {
+	  transform: translate3d(180%, -28vh, 120px) rotate(-14deg) scale(0.55);
+	  opacity: 0;
+	}
+	.poster-grid.converging-s .poster-slice:nth-child(2) {
+	  transform: translate3d(80%, -18vh, 140px) rotate(-6deg) scale(0.6);
+	  opacity: 0;
+	}
+	.poster-grid.converging-s .poster-slice:nth-child(3) {
+	  transform: translate3d(25%, -5vh, 160px) rotate(8deg) scale(0.65);
+	  opacity: 0;
+	}
+	.poster-grid.converging-s .poster-slice:nth-child(4) {
+	  transform: translate3d(-25%, 6vh, 160px) rotate(-8deg) scale(0.65);
+	  opacity: 0;
+	}
+	.poster-grid.converging-s .poster-slice:nth-child(5) {
+	  transform: translate3d(-80%, 18vh, 140px) rotate(6deg) scale(0.6);
+	  opacity: 0;
+	}
+	.poster-grid.converging-s .poster-slice:nth-child(6) {
+	  transform: translate3d(-180%, 28vh, 120px) rotate(14deg) scale(0.55);
+	  opacity: 0;
+	}
+
+	/* ==========================================
+	   SCREEN 2: NETFLIX "S" RIBBON INTRO ANIMATION
+	   ========================================== */
+	.s-ribbon-path {
+	  fill: none;
+	  stroke-linecap: round;
+	  stroke-linejoin: round;
+	  stroke-dasharray: 1200;
+	  stroke-dashoffset: 1200;
+	}
+
+	.animate-s-draw .s-ribbon-base {
+	  animation: drawRibbon 1.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	}
+
+	.animate-s-draw .s-ribbon-core {
+	  animation: drawRibbon 1.55s cubic-bezier(0.4, 0, 0.2, 1) 0.08s forwards;
+	}
+
+	.animate-s-draw .s-ribbon-highlight {
+	  animation: drawRibbon 1.55s cubic-bezier(0.4, 0, 0.2, 1) 0.16s forwards;
+	}
+
+	@keyframes drawRibbon {
+	  0% {
+		stroke-dashoffset: 1200;
+	  }
+	  100% {
+		stroke-dashoffset: 0;
+	  }
+	}
+
+	/* Zooming the S ribbon into camera */
+	.s-zoom-in {
+	  animation: zoomIntoS 1.15s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+	}
+
+	@keyframes zoomIntoS {
+	  0% {
+		transform: scale(1);
+		opacity: 1;
+		filter: drop-shadow(0 0 35px rgba(229, 9, 20, 0.85));
+	  }
+	  60% {
+		transform: scale(4.5);
+		opacity: 1;
+		filter: drop-shadow(0 0 70px rgba(255, 50, 50, 1));
+	  }
+	  100% {
+		transform: scale(18);
+		opacity: 0;
+	  }
+	}
+
+	/* Chromatic Netflix Light Spectrum Streaks */
+	.spectrum-container {
+	  position: absolute;
+	  inset: 0;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  overflow: hidden;
+	  opacity: 0;
+	  pointer-events: none;
+	}
+
+	.spectrum-active {
+	  animation: spectrumBurst 1.25s ease-out forwards;
+	}
+
+	@keyframes spectrumBurst {
+	  0% {
+		opacity: 0;
+		transform: scaleX(0.15) scaleY(0.6);
+	  }
+	  35% {
+		opacity: 1;
+		transform: scaleX(1.1) scaleY(1);
+	  }
+	  100% {
+		opacity: 0;
+		transform: scaleX(3.2) scaleY(1.2);
+	  }
+	}
+
+	.spectrum-bar {
+	  height: 120vh;
+	  filter: blur(8px);
+	  mix-blend-mode: screen;
+	}
+
+	/* ==========================================
+	   SCREEN 3: NETFLIX HUB & MODAL STYLES
+	   ========================================== */
+	.hero-vignette {
+	  background:
+		linear-gradient(90deg, #141414 0%, rgba(20, 20, 20, 0.88) 42%, rgba(20, 20, 20, 0.25) 100%),
+		linear-gradient(180deg, rgba(20, 20, 20, 0.5) 0%, rgba(20, 20, 20, 0) 35%, #141414 96%);
+	}
+
+	.episode-card {
+	  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+	}
+
+	.episode-card:hover {
+	  transform: translateY(-6px) scale(1.015);
+	  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 25px rgba(229, 9, 20, 0.22);
+	  border-color: rgba(229, 9, 20, 0.5);
+	}
+
+	/* Subtle pulse for Show More CTA */
+	@keyframes pulseGlow {
+	  0%, 100% {
+		box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7), 0 12px 35px rgba(229, 9, 20, 0.55);
+	  }
+	  50% {
+		box-shadow: 0 0 0 14px rgba(229, 9, 20, 0), 0 16px 45px rgba(229, 9, 20, 0.85);
+	  }
+	}
+
+	.btn-netflix-glow {
+	  animation: pulseGlow 2.4s infinite;
+	}
+
+	/* Custom Scrollbar */
+	::-webkit-scrollbar {
+	  width: 8px;
+	  height: 8px;
+	}
+	::-webkit-scrollbar-track {
+	  background: #0f0f0f;
+	}
+	::-webkit-scrollbar-thumb {
+	  background: #333;
+	  border-radius: 4px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+	  background: #E50914;
+	}
+
+	/* Hero Banner Backdrop Positioning */
+	#hero-banner img[alt="Featured Birthday Backdrop"] {
+	  width: 65% !important;
+	  margin-left: auto !important;
+	  right: 0 !important;
+	  left: auto !important;
+	  object-position: center top !important;
+	  opacity: 0.75 !important;
+	}
+	
+	/* Lock face eye-level across all slices & screen sizes */
+	.slice-bg {
+	  transform: scale(var(--slice-scale, 1.06));
+	  transform-origin: center 20%;
+	}
+
+	.poster-slice:hover .slice-bg,
+	.poster-slice.slice-active .slice-bg {
+	  transform: scale(calc(var(--slice-scale, 1.06) + 0.08));
+	}
+
+	@media (max-width: 768px) {
+	  .slice-letter {
+		font-size: clamp(2.2rem, 7vw, 3.8rem);
+	  }
+	  .poster-grid .poster-slice:hover,
+	  .poster-grid .poster-slice.slice-active {
+		flex: 2.4;
+	  }
+	}
+  </style>
+</head>
+<body class="bg-black text-white antialiased selection:bg-red-600 selection:text-white">
+
+  <!-- Optional local audio hook -->
+  <audio id="tudum-audio" preload="auto"></audio>
+
+  <!-- Confetti Canvas Overlay for Birthday Celebrations -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- =====================================================================
+	   SCREEN 1: THE 6-PART HERO POSTER (Childhood to Present + 6 Letters)
+	   ===================================================================== -->
+  <section id="screen-poster" class="relative w-screen h-screen overflow-hidden select-none">
+
+	<!-- Top Floating Netflix Original Header Bar -->
+	<div id="poster-top-bar" class="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 bg-gradient-to-b from-black/85 via-black/40 to-transparent pointer-events-none transition-opacity duration-500">
+	  <div class="flex items-center gap-2.5 sm:gap-3">
+		<span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#E50914] font-bebas text-lg sm:text-xl text-white shadow-lg shadow-red-600/40" id="poster-badge-letter">S</span>
+		<div class="text-[11px] sm:text-xs font-bold tracking-[0.22em] uppercase">
+		  <span class="text-white">BIRTHDAY SPECIAL</span>
+		  <span class="text-neutral-400 mx-1">•</span>
+		  <span class="text-[#E50914]">LIMITED SERIES</span>
+		</div>
+	  </div>
+
+	  <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/65 backdrop-blur-md border border-white/10 text-xs text-neutral-300">
+		<span class="w-2 h-2 rounded-full bg-[#E50914] animate-pulse"></span>
+		<span>Hover or tap each slice to travel through time</span>
+	  </div>
+	</div>
+
+	<!-- 6-Column Slice Container (Populated dynamically from CONFIG.posterSlices) -->
+	<div id="poster-slices-container" class="poster-grid">
+	  <!-- Slices injected via JS -->
+	</div>
+
+	<!-- Bottom Center Call-To-Action Overlay -->
+	<div id="poster-cta-wrapper" class="absolute bottom-0 inset-x-0 z-20 flex flex-col items-center justify-end pb-5 sm:pb-7 pt-16 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none transition-opacity duration-500">
+	  <p class="text-[10px] sm:text-xs font-bold tracking-[0.28em] uppercase text-red-400 mb-1 text-center px-4">
+		A SPECIAL BIRTHDAY ORIGINAL • 6 ERAS, 1 STORY
+	  </p>
+	  <h1 id="poster-main-title" class="font-bebas text-3xl sm:text-5xl tracking-wider text-white mb-3.5 drop-shadow-xl text-center px-4">
+		THE EVOLUTION OF SHREYA
+	  </h1>
+
+	  <!-- Show More Button -->
+	  <button
+		id="btn-show-more"
+		onclick="startSIntroTransition()"
+		class="pointer-events-auto group relative inline-flex items-center gap-3 bg-[#E50914] hover:bg-[#f6121d] active:scale-95 text-white font-bold text-sm sm:text-base px-7 sm:px-9 py-3 sm:py-3.5 rounded-full btn-netflix-glow transition-all duration-300 cursor-pointer"
+	  >
+		<span class="flex items-center justify-center w-7 h-7 rounded-full bg-white text-[#E50914] group-hover:scale-110 transition-transform">
+		  <svg class="w-3.5 h-3.5 ml-0.5 fill-current" viewBox="0 0 24 24">
+			<path d="M8 5v14l11-7z" />
+		  </svg>
+		</span>
+		<span class="tracking-wide">Show More</span>
+		<svg class="w-4 h-4 text-white/80 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+		  <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+		</svg>
+	  </button>
+
+	  <div class="mt-2.5 flex items-center gap-1.5 text-[11px] text-neutral-400">
+		<span class="text-red-500">🔊</span>
+		<span id="poster-sound-hint">Turn sound on for the Netflix "S" Birthday Intro</span>
+	  </div>
+	</div>
+  </section>
+
+  <!-- =====================================================================
+	   SCREEN 2: THE "S" NETFLIX INTRO ANIMATION
+	   ===================================================================== -->
+  <section id="screen-intro" class="fixed inset-0 z-40 hidden bg-black flex flex-col items-center justify-center overflow-hidden">
+
+	<!-- Animated SVG "S" Ribbon -->
+	<div id="s-logo-wrapper" class="relative flex flex-col items-center justify-center">
+	  <svg class="w-56 h-72 sm:w-72 sm:h-96 overflow-visible" viewBox="0 0 240 320">
+		<defs>
+		  <linearGradient id="sShadowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#6e0208" />
+			<stop offset="50%" stop-color="#b00610" />
+			<stop offset="100%" stop-color="#4a0105" />
+		  </linearGradient>
+
+		  <linearGradient id="sMainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#ff1f2c" />
+			<stop offset="50%" stop-color="#E50914" />
+			<stop offset="100%" stop-color="#b8060f" />
+		  </linearGradient>
+
+		  <linearGradient id="sGlowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+			<stop offset="0%" stop-color="#ff858b" />
+			<stop offset="50%" stop-color="#ffffff" stop-opacity="0.7" />
+			<stop offset="100%" stop-color="#ff2a36" />
+		  </linearGradient>
+
+		  <filter id="sRedGlow" x="-30%" y="-30%" width="160%" height="160%">
+			<feGaussianBlur stdDeviation="12" result="blur" />
+			<feComposite in="SourceGraphic" in2="blur" operator="over" />
+		  </filter>
+		</defs>
+
+		<path
+		  class="s-ribbon-path s-ribbon-base"
+		  d="M 188 68 C 165 20, 62 20, 56 82 C 50 140, 192 152, 186 226 C 180 292, 72 292, 48 242"
+		  stroke="url(#sShadowGrad)"
+		  stroke-width="46"
+		/>
+
+		<path
+		  class="s-ribbon-path s-ribbon-core"
+		  d="M 182 64 C 160 20, 62 20, 56 82 C 50 140, 192 152, 186 226 C 180 292, 76 290, 52 240"
+		  stroke="url(#sMainGrad)"
+		  stroke-width="34"
+		  filter="url(#sRedGlow)"
+		/>
+
+		<path
+		  class="s-ribbon-path s-ribbon-highlight"
+		  d="M 178 62 C 156 24, 68 24, 62 82 C 56 138, 186 152, 180 226 C 174 286, 80 286, 56 238"
+		  stroke="url(#sGlowGrad)"
+		  stroke-width="7"
+		  opacity="0.85"
+		/>
+	  </svg>
+
+	  <div id="intro-caption" class="mt-2 text-center opacity-0 transition-opacity duration-500">
+		<span class="text-xs sm:text-sm tracking-[0.45em] uppercase text-neutral-300 font-semibold">
+		  A <span class="text-[#E50914] font-bold">SHREYA</span> BIRTHDAY ORIGINAL
+		</span>
+	  </div>
+	</div>
+
+	<!-- Chromatic Spectrum Light Streaks (Netflix Zoom Effect) -->
+	<div id="spectrum-streaks" class="spectrum-container">
+	  <div class="spectrum-bar w-6 bg-[#E50914]"></div>
+	  <div class="spectrum-bar w-4 bg-[#ff5f6d]"></div>
+	  <div class="spectrum-bar w-8 bg-[#ff9966]"></div>
+	  <div class="spectrum-bar w-3 bg-white"></div>
+	  <div class="spectrum-bar w-10 bg-[#E50914]"></div>
+	  <div class="spectrum-bar w-5 bg-[#7928ca]"></div>
+	  <div class="spectrum-bar w-8 bg-[#00d2ff]"></div>
+	  <div class="spectrum-bar w-12 bg-[#E50914]"></div>
+	  <div class="spectrum-bar w-4 bg-[#ffcb52]"></div>
+	  <div class="spectrum-bar w-9 bg-[#ff0055]"></div>
+	</div>
+  </section>
+
+  <!-- =====================================================================
+	   SCREEN 3: THE 5 EPISODES NETFLIX HUB
+	   ===================================================================== -->
+  <main id="screen-hub" class="hidden min-h-screen bg-[#141414] text-white pb-24">
+
+	<!-- Sticky Netflix Top Navigation Bar -->
+	<header class="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-10 py-3.5 bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-md border-b border-white/5">
+	  <div class="flex items-center gap-3 sm:gap-6">
+		<button onclick="returnToPoster()" class="flex items-center gap-2.5 group text-left focus:outline-none" title="Back to 6-Part Poster">
+		  <div class="w-9 h-9 rounded-md bg-[#E50914] flex items-center justify-center shadow-lg shadow-red-600/30 group-hover:scale-105 transition-transform">
+			<span id="nav-s-letter" class="font-bebas text-2xl text-white tracking-wider">S</span>
+		  </div>
+		  <div>
+			<span id="nav-brand-name" class="font-bebas text-2xl sm:text-3xl tracking-wider text-[#E50914] block leading-none">
+			  SHREYAFLIX
+			</span>
+			<span class="text-[10px] tracking-[0.2em] uppercase text-neutral-400 block">
+			  Birthday Edition
+			</span>
+		  </div>
+		</button>
+
+		<nav class="hidden md:flex items-center gap-5 text-sm text-neutral-300 font-medium">
+		  <a href="#hero-banner" class="text-white font-semibold hover:text-red-500 transition-colors">Home</a>
+		  <a href="#episodes-section" class="hover:text-white transition-colors">5 Episodes</a>
+		  <a href="#eras-strip-section" class="hover:text-white transition-colors">6 Eras Gallery</a>
+		  <button onclick="openBirthdayLetterModal()" class="hover:text-white transition-colors">Birthday Note</button>
+		</nav>
+	  </div>
+
+	  <!-- Right Action Buttons -->
+	  <div class="flex items-center gap-2 sm:gap-3">
+		<button
+		  onclick="returnToPoster()"
+		  class="inline-flex items-center gap-1.5 text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-neutral-200 px-3 sm:px-4 py-2 rounded-md border border-white/10 transition-all"
+		>
+		  <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+		  </svg>
+		  <span class="hidden sm:inline">6-Slice Poster</span>
+		  <span class="sm:hidden">Poster</span>
+		</button>
+
+		<button
+		  onclick="replaySIntro()"
+		  class="inline-flex items-center gap-1.5 text-xs sm:text-sm bg-[#E50914]/20 hover:bg-[#E50914] text-red-300 hover:text-white px-3 sm:px-4 py-2 rounded-md border border-[#E50914]/40 transition-all"
+		>
+		  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+			<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+		  </svg>
+		  <span>Replay "S" Intro</span>
+		</button>
+	  </div>
+	</header>
+
+	<!-- Featured Hero Banner -->
+	<section id="hero-banner" class="relative min-h-[74vh] sm:min-h-[78vh] flex items-center px-4 sm:px-10 lg:px-16 py-12 overflow-hidden">
+	  <!-- Hero Backdrop Image -->
+	  <div class="absolute inset-0 z-0">
+		<img
+		  id="hero-backdrop-img"
+		  src="https://lh3.googleusercontent.com/d/18q7pCWdw9efKYz1JyVAMNun9fxp0zLNa"
+		  alt="Featured Birthday Backdrop"
+		  class="w-full h-full object-cover object-center scale-105 filter brightness-75 contrast-110"
+		  onerror="this.src='https://placehold.co/1600x900/1f1f1f/E50914?text=Happy+Birthday'"
+		/>
+		<div class="absolute inset-0 hero-vignette"></div>
+	  </div>
+
+	  <!-- Hero Content -->
+	  <div class="relative z-10 max-w-2xl space-y-4 sm:space-y-5 pt-6">
+		<div class="inline-flex items-center gap-2.5">
+		  <span class="px-2 py-0.5 bg-[#E50914] text-white font-bebas text-lg tracking-wider rounded-sm">S</span>
+		  <span class="text-xs sm:text-sm font-bold tracking-[0.28em] uppercase text-neutral-300">
+			BIRTHDAY ORIGINAL SERIES
+		  </span>
+		</div>
+
+		<h1 id="hero-title" class="font-bebas text-5xl sm:text-7xl lg:text-8xl tracking-wide leading-[0.95] text-white drop-shadow-2xl">
+		  THE GIRL FROM SOLAPUR
+		</h1>
+
+		<!-- Netflix Metadata Badges -->
+		<div class="flex flex-wrap items-center gap-2.5 sm:gap-3.5 text-xs sm:text-sm font-semibold">
+		  <span class="text-[#46d369] font-bold">99% Match</span>
+		  <span class="text-neutral-300">2026</span>
+		  <span class="px-2 py-0.5 bg-white/15 border border-white/20 rounded text-xs text-white">Cutie</span>
+		  <span class="text-neutral-200">Limited Birthday Edition</span>
+		  <span class="px-2 py-0.5 bg-[#E50914]/20 border border-[#E50914]/50 rounded text-xs text-red-300">5 Episodes</span>
+		  <span class="px-1.5 py-0.5 border border-neutral-500 rounded text-[11px] text-neutral-300">HD</span>
+		</div>
+
+		<!-- Warm Uplifting Synopsis -->
+		<p id="hero-synopsis" class="text-sm sm:text-base lg:text-lg text-neutral-200 leading-relaxed font-normal max-w-xl">
+		  The story of an intelligent and inspiring girl born in a small Indian city on November 5, 1999. From her school days through college, she kept pushing forward with unstoppable energy. After completing her engineering degree and working as an SDE in the corporate world, she chased her biggest dream: leaving her job to pursue her Master’s degree in the US.
+		</p>
+
+		<!-- Top 1 Badge -->
+		<div class="flex items-center gap-2.5 pt-1">
+		  <div class="bg-[#E50914] text-white font-bebas text-xs px-2 py-1 rounded leading-none text-center">
+			TOP<br><span class="text-sm font-bold">1</span>
+		  </div>
+		  <span class="text-xs sm:text-sm font-semibold text-neutral-200">
+			#1 Trending on Her Birthday Today
+		  </span>
+		</div>
+
+		<!-- Primary Action Buttons -->
+		<div class="flex flex-wrap items-center gap-3 sm:gap-4 pt-3">
+		  <button
+			onclick="openEpisodeModal(0)"
+			class="inline-flex items-center gap-2.5 bg-white hover:bg-neutral-200 active:scale-95 text-black font-bold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-3.5 rounded-md shadow-xl transition-all cursor-pointer"
+		  >
+			<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+			  <path d="M8 5v14l11-7z" />
+			</svg>
+			<span>Play Ep 1</span>
+		  </button>
+
+		  <button
+			onclick="openBirthdayLetterModal()"
+			class="inline-flex items-center gap-2.5 bg-neutral-600/70 hover:bg-neutral-600/90 backdrop-blur-md active:scale-95 text-white font-semibold text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5 rounded-md border border-white/15 transition-all cursor-pointer"
+		  >
+			<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+			  <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+			</svg>
+			<span>Read Note</span>
+		  </button>
+
+		  <button
+			onclick="triggerBirthdayCheer()"
+			class="inline-flex items-center gap-2 bg-[#E50914]/20 hover:bg-[#E50914]/35 text-red-300 font-semibold text-sm px-4 py-3 sm:py-3.5 rounded-md border border-[#E50914]/40 transition-all cursor-pointer"
+			title="Launch Birthday Confetti"
+		  >
+			<span>🎉 Send Cheer</span>
+		  </button>
+		</div>
+	  </div>
+	</section>
+
+	<!-- =====================================================================
+		 THE 5 EPISODES SECTION
+		 ===================================================================== -->
+	<section id="episodes-section" class="relative z-10 px-4 sm:px-10 lg:px-16 -mt-6 sm:-mt-10">
+	  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6 border-b border-white/10 pb-4">
+		<div>
+		  <div class="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-red-400 font-semibold mb-1">
+			<span>Binge-Watch Ready</span>
+			<span>•</span>
+			<span>Click any episode to watch & read</span>
+		  </div>
+		  <h2 class="font-bebas text-3xl sm:text-4xl tracking-wider text-white">
+			EPISODES <span class="text-neutral-400 text-2xl">(5)</span>
+		  </h2>
+		</div>
+
+		<div class="flex items-center gap-2 text-xs sm:text-sm text-neutral-300 bg-[#1f1f1f] px-3.5 py-2 rounded-md border border-white/10">
+		  <span class="text-[#46d369] font-semibold">Season 1:</span>
+		  <span>The Comeback Arc</span>
+		</div>
+	  </div>
+
+	  <!-- 5 Episodes Responsive Grid -->
+	  <div id="episodes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+		<!-- Episode cards populated via JS from CONFIG.episodes -->
+	  </div>
+	</section>
+
+	<!-- =====================================================================
+		 6 ERAS GALLERY REVISIT STRIP (From Childhood to Present)
+		 ===================================================================== -->
+	<section id="eras-strip-section" class="px-4 sm:px-10 lg:px-16 mt-16">
+	  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+		<div>
+		  <h3 class="font-bebas text-2xl sm:text-3xl tracking-wider text-white">
+			THE 6 ERAS OF <span id="gallery-name-heading" class="text-[#E50914]">SHREYA</span>
+		  </h3>
+		  <p class="text-xs sm:text-sm text-neutral-400">
+			Every letter of your name represents a chapter you conquered to become who you are today.
+		  </p>
+		</div>
+		<button
+		  onclick="returnToPoster()"
+		  class="self-start sm:self-auto text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1"
+		>
+		  <span>Open Full-Screen 6-Slice Poster</span>
+		  <span>→</span>
+		</button>
+	  </div>
+
+	  <div id="eras-mini-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+		<!-- Populated from CONFIG.posterSlices -->
+	  </div>
+	</section>
+  </main>
+
+  <!-- =====================================================================
+	   NETFLIX EPISODE MODAL (Video Player + YouTube + Interactive Story)
+	   ===================================================================== -->
+  <div
+	id="episode-modal"
+	class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
+	onclick="handleModalBackdropClick(event, 'episode-modal')"
+  >
+	<div class="relative w-full max-w-4xl bg-[#181818] rounded-xl overflow-hidden shadow-2xl border border-white/15 my-auto animate-fadeIn">
+
+	  <!-- Close Modal Button -->
+	  <button
+		onclick="closeEpisodeModal()"
+		class="absolute top-3.5 right-3.5 z-30 w-10 h-10 rounded-full bg-black/75 hover:bg-[#E50914] text-white flex items-center justify-center border border-white/20 transition-colors"
+		title="Close (Esc)"
+	  >
+		<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+		  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+		</svg>
+	  </button>
+
+	  <!-- Video / YouTube / Interactive Visual Player Area -->
+	  <div class="relative w-full aspect-video bg-black overflow-hidden">
+
+		<!-- HTML5 Video Player (For direct .mp4 files) -->
+		<video
+		  id="modal-video-player"
+		  class="w-full h-full object-contain bg-black"
+		  controls
+		  playsinline
+		>
+		  Your browser does not support the video tag.
+		</video>
+
+		<!-- YouTube Embed Player (For Unlisted YouTube links) -->
+		<iframe
+		  id="modal-youtube-player"
+		  class="hidden w-full h-full bg-black border-0"
+		  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+		  allowfullscreen
+		></iframe>
+
+		<!-- Interactive Cinema Memory Mode (Shown if video isn't placed yet or when toggled) -->
+		<div id="modal-visual-fallback" class="hidden absolute inset-0 bg-black flex flex-col justify-between p-6 sm:p-10 overflow-hidden">
+		  <img
+			id="modal-fallback-img"
+			src=""
+			alt="Episode Memory"
+			class="absolute inset-0 w-full h-full object-cover opacity-45 scale-105 transition-transform duration-1000"
+		  />
+		  <div class="absolute inset-0 bg-gradient-to-t from-[#181818] via-black/60 to-black/70"></div>
+
+		  <!-- Top Bar inside Visual Player -->
+		  <div class="relative z-10 flex items-center justify-between">
+			<span class="px-3 py-1 rounded-full bg-[#E50914]/90 text-white text-xs font-bold tracking-wider uppercase">
+			  Interactive Memory Reel
+			</span>
+			<div class="flex items-center gap-2">
+			  <label class="cursor-pointer inline-flex items-center gap-1.5 text-xs bg-white/15 hover:bg-white/25 backdrop-blur-md px-3 py-1.5 rounded-md border border-white/20 text-white transition-all">
+				<span>🖼️ Preview Photo</span>
+				<input type="file" accept="image/*" class="hidden" onchange="loadCustomEpisodePhoto(event)" />
+			  </label>
+			  <label class="cursor-pointer inline-flex items-center gap-2 text-xs bg-white/15 hover:bg-white/25 backdrop-blur-md px-3.5 py-1.5 rounded-md border border-white/20 text-white transition-all">
+				<svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+				  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+				</svg>
+				<span>Load Local Video (.mp4)</span>
+				<input type="file" accept="video/*" class="hidden" onchange="loadCustomEpisodeVideo(event)" />
+			  </label>
+			</div>
+		  </div>
+
+		  <!-- Center Animated Quote & Play Chime -->
+		  <div class="relative z-10 my-auto max-w-2xl mx-auto text-center space-y-3">
+			<p id="modal-fallback-badge" class="text-xs uppercase tracking-[0.3em] text-red-400 font-semibold"></p>
+			<h3 id="modal-fallback-title" class="font-bebas text-3xl sm:text-5xl tracking-wide text-white drop-shadow-lg"></h3>
+			<p id="modal-fallback-quote" class="text-sm sm:text-base text-neutral-200 italic leading-relaxed"></p>
+		  </div>
+
+		  <!-- Bottom Controls bar -->
+		  <div class="relative z-10 flex items-center justify-between text-xs text-neutral-400 border-t border-white/10 pt-3">
+			<span id="modal-video-path-hint">Tip: Paste your Unlisted YouTube URL in CONFIG.episodes</span>
+			<button
+			  onclick="switchToVideoTag()"
+			  class="text-red-400 hover:text-red-300 font-semibold underline"
+			>
+			  Switch to Video Player
+			</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <!-- Player Mode Switch Bar -->
+	  <div class="bg-[#121212] px-5 sm:px-8 py-2.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+		<div class="flex items-center gap-2 text-neutral-300">
+		  <span class="w-2 h-2 rounded-full bg-[#46d369]"></span>
+		  <span id="modal-ep-indicator" class="font-semibold">Now Playing: Episode 1</span>
+		</div>
+		<div class="flex items-center gap-3">
+		  <button
+			onclick="togglePlayerMode()"
+			id="btn-toggle-player-mode"
+			class="text-neutral-300 hover:text-white bg-white/10 px-3 py-1 rounded border border-white/10 transition-colors"
+		  >
+			Switch to Interactive Memory Card
+		  </button>
+		  <label class="cursor-pointer text-red-400 hover:text-red-300 font-medium flex items-center gap-1">
+			<span>+ Test with your own .mp4 file</span>
+			<input type="file" accept="video/*" class="hidden" onchange="loadCustomEpisodeVideo(event)" />
+		  </label>
+		</div>
+	  </div>
+
+	  <!-- Modal Details & Birthday Note -->
+	  <div class="p-5 sm:p-8 space-y-6 max-h-[52vh] overflow-y-auto">
+		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+		  <div>
+			<div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold mb-1.5">
+			  <span class="text-[#46d369]">99% Match</span>
+			  <span id="modal-ep-duration" class="text-neutral-400"></span>
+			  <span id="modal-ep-badge" class="px-2.5 py-0.5 rounded bg-[#E50914]/20 border border-[#E50914]/40 text-red-300"></span>
+			</div>
+			<h2 id="modal-ep-title" class="font-bebas text-3xl sm:text-4xl tracking-wide text-white"></h2>
+		  </div>
+
+		  <!-- Next / Prev Episode Controls -->
+		  <div class="flex items-center gap-2 self-start sm:self-auto">
+			<button
+			  id="btn-prev-ep"
+			  onclick="navigateEpisode(-1)"
+			  class="px-3.5 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs sm:text-sm font-medium text-white transition-colors"
+			>
+			  ← Prev
+			</button>
+			<button
+			  id="btn-next-ep"
+			  onclick="navigateEpisode(1)"
+			  class="px-4 py-2 rounded-md bg-[#E50914] hover:bg-[#f6121d] text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 shadow-lg shadow-red-600/30 transition-all"
+			>
+			  <span>Next Episode</span>
+			  <span>→</span>
+			</button>
+		  </div>
+		</div>
+
+		<!-- Short Teaser -->
+		<p id="modal-ep-short" class="text-sm sm:text-base text-neutral-300 leading-relaxed"></p>
+
+		<!-- Dedicated Birthday Note Card -->
+		<div class="relative rounded-xl bg-gradient-to-br from-[#231718] via-[#1c1c1c] to-[#161616] p-5 sm:p-6 border border-[#E50914]/30 shadow-inner">
+		  <div class="flex items-center justify-between mb-3">
+			<div class="flex items-center gap-2">
+			  <span class="w-7 h-7 rounded-full bg-[#E50914] text-white flex items-center justify-center text-xs font-bold">♥</span>
+			  <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-red-300">
+				Chapter Note • A Reminder For You
+			  </span>
+			</div>
+			<button
+			  onclick="triggerBirthdayCheer()"
+			  class="text-xs text-neutral-300 hover:text-white bg-white/10 px-2.5 py-1 rounded-full transition-colors"
+			>
+			  ✨ Send Cheer
+			</button>
+		  </div>
+
+		  <p id="modal-ep-long-message" class="text-sm sm:text-base text-neutral-100 leading-relaxed whitespace-pre-line font-normal"></p>
+
+		  <!-- Memory Highlights Tags -->
+		  <div id="modal-ep-highlights" class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+			<!-- Populated dynamically -->
+		  </div>
+		</div>
+	  </div>
+	</div>
+  </div>
+
+  <!-- =====================================================================
+	   HEARTFELT BIRTHDAY LETTER MODAL
+	   ===================================================================== -->
+  <div
+	id="birthday-letter-modal"
+	class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+	onclick="handleModalBackdropClick(event, 'birthday-letter-modal')"
+  >
+	<div class="relative w-full max-w-2xl bg-gradient-to-b from-[#1f1f1f] to-[#141414] rounded-2xl p-6 sm:p-9 border border-red-500/30 shadow-2xl space-y-5 max-h-[88vh] overflow-y-auto">
+	  <button
+		onclick="closeBirthdayLetterModal()"
+		class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-[#E50914] text-white flex items-center justify-center transition-colors"
+	  >
+		✕
+	  </button>
+
+	  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E50914]/20 border border-[#E50914]/40 text-red-300 text-xs font-semibold">
+		<span>💌 Birthday Special Note</span>
+	  </div>
+
+	  <h3 id="letter-modal-heading" class="font-bebas text-3xl sm:text-5xl tracking-wide text-white">
+		DEAR SHREYA, READ THIS WHENEVER TIMES FEEL HEAVY
+	  </h3>
+
+	  <div id="letter-modal-body" class="space-y-4 text-sm sm:text-base text-neutral-200 leading-relaxed">
+		<!-- Populated from CONFIG.birthdayMainLetter -->
+	  </div>
+
+	  <div class="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+		<div>
+		  <p class="text-xs text-neutral-400">Wishing you the happiest birthday,</p>
+		  <p id="letter-modal-signoff" class="text-sm font-bold text-red-400">Always rooting for you ♥</p>
+		</div>
+
+		<button
+		  onclick="openGiftModal()"
+		  class="bg-[#E50914] hover:bg-[#f6121d] text-white font-bold text-sm px-6 py-2.5 rounded-md shadow-lg transition-all cursor-pointer"
+		>
+		  Gand Maar Is Button ki 🎉
+		</button>
+	  </div>
+	</div>
+  </div>
+
+  <!-- =====================================================================
+	   GIFT SURPRISE POPUP MODAL (Virtual Card & Special Request)
+	   ===================================================================== -->
+  <div
+	id="gift-modal"
+	class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+	onclick="handleModalBackdropClick(event, 'gift-modal')"
+  >
+	<div class="relative w-full max-w-lg bg-gradient-to-b from-[#221012] via-[#161616] to-[#121212] rounded-2xl p-6 sm:p-8 border border-red-500/40 shadow-2xl space-y-6 animate-fadeIn">
+	  <button
+		onclick="closeGiftModal()"
+		class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-[#E50914] text-white flex items-center justify-center transition-colors"
+	  >
+		✕
+	  </button>
+
+	  <div class="text-center space-y-1">
+		<span class="px-3 py-1 rounded-full bg-[#E50914]/20 border border-[#E50914]/40 text-red-300 text-xs font-semibold uppercase tracking-wider">
+		  🎁 A Small Gift For You
+		</span>
+		<h3 class="font-bebas text-3xl sm:text-4xl tracking-wide text-white pt-1">
+		  YOUR BIRTHDAY PASS & SPECIAL REQUEST
+		</h3>
+	  </div>
+
+	  <!-- Virtual Credit Card Component (No CVV) -->
+	  <div class="relative w-full h-48 rounded-2xl bg-gradient-to-tr from-[#8a040b] via-[#b80710] to-[#E50914] p-5 shadow-2xl border border-white/20 flex flex-col justify-between overflow-hidden">
+		<div class="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+
+		<div class="flex justify-between items-center z-10">
+		  <span class="font-bebas tracking-widest text-lg text-white/90">SHREYA BIRTHDAY PASS</span>
+		  <div class="w-10 h-7 rounded bg-amber-200/90 border border-amber-400/50 flex items-center justify-center">
+			<div class="w-6 h-4 border border-amber-600/60 rounded-sm grid grid-cols-2 grid-rows-2 gap-0.5 p-0.5">
+			  <div class="bg-amber-600/40 rounded-[1px]"></div>
+			  <div class="bg-amber-600/40 rounded-[1px]"></div>
+			  <div class="bg-amber-600/40 rounded-[1px]"></div>
+			  <div class="bg-amber-600/40 rounded-[1px]"></div>
+			</div>
+		  </div>
+		</div>
+
+		<div class="z-10 font-mono tracking-widest text-lg sm:text-xl text-white font-bold drop-shadow">
+		  4315 8139 5852 5006
+		</div>
+
+		<div class="flex justify-between items-end z-10 text-xs text-white/90">
+		  <div>
+			<p class="text-[9px] uppercase tracking-wider text-white/70">Cardholder Name</p>
+			<p class="font-bold tracking-wider text-sm">SANU</p>
+		  </div>
+		  <div>
+			<p class="text-[9px] uppercase tracking-wider text-white/70">Expires</p>
+			<p class="font-bold tracking-wider">02/30</p>
+		  </div>
+		</div>
+	  </div>
+
+	  <!-- Special Note from You -->
+	  <div class="bg-black/40 rounded-xl p-4 border border-white/10 text-xs sm:text-sm text-neutral-200 leading-relaxed space-y-3">
+		<p>
+		  "Since you are staying so far away from here, I can’t physically send you the gift you deserve. But as you know my card details, you have my permission to buy one beautiful dress from wherever you want, along with your favorite dessert!"
+		</p>
+		<p class="text-red-300 font-semibold">
+		  💡 For the OTP or CVV... well, you already know where to reach me! 😉
+		</p>
+	  </div>
+
+	  <div class="pt-2 flex items-center justify-between">
+		<button
+		  onclick="closeGiftModal(); triggerBirthdayCheer();"
+		  class="w-full bg-[#E50914] hover:bg-[#f6121d] text-white font-bold text-sm py-3 rounded-xl shadow-lg transition-all cursor-pointer text-center"
+		>
+		  Got It! Let's Go Shopping 🎉
+		</button>
+	  </div>
+	</div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div
+	id="cheer-toast"
+	class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 bg-[#1f1f1f] border border-[#E50914] text-white px-5 py-3.5 rounded-xl shadow-2xl"
+  >
+	<span class="text-2xl">🎂</span>
+	<div>
+	  <p class="text-xs font-bold uppercase tracking-wider text-red-400">Birthday Reminder</p>
+	  <p id="cheer-toast-text" class="text-sm font-medium text-neutral-100">Your best season starts right now!</p>
+	</div>
+  </div>
+
+  <!-- =====================================================================
+	   APPLICATION SCRIPT & EASY CONFIGURATION AT THE TOP
+	   ===================================================================== -->
+  <script>
+	const CONFIG = {
+	  nameLetters: ['S', 'H', 'R', 'E', 'Y', 'A'],
+	  fullName: 'SHREYA',
+	  signOff: 'Always rooting for you ♥',
+
+	  // Updated Birthday Note Text
+	  birthdayMainLetter: [
+		"Abe gandu! 😂",
+		"Yahan kya padhne aayi hai? Chutiye! Chal chal, ab itni door aa hi gayi hai toh do-chaar line padh ke ja. Itna effort kiya hai tere liye!",
+		"Jokes apart…",
+		"I don’t know tere andar kaunsi battery lagi hai jo tujhe hamesha active rakhti hai. Life mein kuch bhi chal raha ho, kitni bhi tension ya uncertainty ho, tu phir bhi haste rehne aur apni energy maintain karne ki poori koshish karti hai.",
+		"Main jaanta hoon ki andar se kitna kuch sochti rehti hai, kitni saari cheezein tujhe affect karti hain. But the way you handle everything without losing that smile is something I genuinely admire.",
+		"Aur tera nature! Tu jis tarah logon se baat karti hai, sabke saath comfortable hoti hai aur apni kindness spread karti hai, woh tujhe aur bhi special banata hai.",
+		"Life mein tune bahut kuch dekha aur seekha hai. Aage bhi kabhi sab kuch plan ke according nahi hoga, but that’s okay. Har cheez hum control nahi kar sakte. Tu bas aise hi haste reh, bakchodi kar, enjoy kar aur apni life jee. Achhe din zaroor aayenge!",
+		"Waise humari roz-roz baat nahi hoti, but jab bhi hoti hai, dil khol ke hoti hai. Sukh-dukh share karna, ek-doosre ko tease karna aur ek hi conversation mein saari bakchodi kar lena — I genuinely like that about us.",
+		"Aur yaad rakh, kabhi bhi kisi cheez ki zarurat ho, career ho ya personal life, I’m just one call away. Bina soche, bina hesitate kiye call karna. I’ll always be there whenever you need me.",
+		"Aur haan, itni taarif padh ke ye mat sochna ki koi Relationship ya Friends with Benifits ka koyi agenda hai! 😂 Mujhe bas tujhe khush dekhna achha lagta hai. Teri excitement, teri smile aur tujhe life mein aage badhte dekhna. That’s it!",
+		"On your birthday, I just wish ki aane wala saal tere liye bahut saari happiness, beautiful memories aur woh opportunities lekar aaye jinka tu intezaar kar rahi hai.",
+		"Bas apni smile, kindness aur woh pagalpan kabhi mat khona. You deserve all the good things coming your way. ❤️",
+		"Chal, ab bahut gyaan ho gaya. Abhi bahut kaam hai, tu bhi apna kaam kar chup-chaap, gandu!",
+		"Aise hi reh, kamini.",
+		"HAPPY BIRTHDAY! ❤️🎂",
+		"Aur haan, niche jo laal button dikh raha hai na, uspe dhappa maar. Ek chhota sa surprise wait kar raha hai!",
+		"GO ON, MADAM. YOUR SURPRISE AWAITS… ❤️"
+	  ],
+
+	  // 6 Poster Slices with direct Google Drive image links
+	  posterSlices: [
+		{
+		  letter: 'S',
+		  eraNumber: 'ERA 01',
+		  eraLabel: 'Childhood',
+		  caption: 'Where the story and that bright smile started.',
+		  imageUrl: 'https://lh3.googleusercontent.com/d/1iEKeib7-AGbKIT7Hip38FxrL3UlfuCL5',
+		  faceFocus: '50% 18%',
+		  faceScale: 1.06
+		},
+		{
+		  letter: 'H',
+		  eraNumber: 'ERA 02',
+		  eraLabel: 'College Days',
+		  caption: 'PUC days, big dreams, and unstoppable energy.',
+		  imageUrl: 'https://lh3.googleusercontent.com/d/15u9zdrSHLLQDI3a66_RIP1CwEYHaIE1F',
+		  faceFocus: '50% 12%',
+		  faceScale: 1.08
+		},
+		{
+		  letter: 'R',
+		  eraNumber: 'ERA 03',
+		  eraLabel: 'Engineering',
+		  caption: 'Madam President leading the entire college.',
+		  imageUrl: 'https://lh3.googleusercontent.com/d/1PXFELsszcjcmuEEH8u1u1qb-JX5nmUMq',
+		  faceFocus: '50% 8%',
+		  faceScale: 1.22
+		},
+		{
+		  letter: 'E',
+		  eraNumber: 'ERA 04',
+		  eraLabel: 'Accenture',
+		  caption: 'The Pune chapter • First job and living on her own terms.',
+		  imageUrl: 'https://lh3.googleusercontent.com/d/1-mN1I29nMfR97aS_jatAPADAZVzYKYNE',
+		  faceFocus: '50% 24%',
+		  faceScale: 1.04
+		},
+		{
+		  letter: 'Y',
+		  eraNumber: 'ERA 05',
+		  eraLabel: 'Masters',
+		  caption: 'The big leap • Moving to the US and earning her MS.',
+		  imageUrl: 'https://lh3.googleusercontent.com/d/12zrGsMAIo7bEbkuEe_chBuM6OPldDnaz',
+		  faceFocus: '50% 10%',
+		  faceScale: 1.18
+		},
+		{
+		  letter: 'A',
+		  eraNumber: 'ERA 06',
+		  eraLabel: 'Prime Era',
+		  caption: 'Stronger than ever, even on the tough days.',
+		  imageUrl: 'https://lh3.googleusercontent.com/d/18q7pCWdw9efKYz1JyVAMNun9fxp0zLNa',
+		  faceFocus: '50% 15%',
+		  faceScale: 1.06
+		}
+	  ],
+
+	  // 5 Episodes (Paste your Unlisted YouTube links in videoUrl below!)
+	  episodes: [
+		{
+		  number: 1,
+		  title: 'The Girl from Solapur',
+		  duration: '59 sec • Origin & PUC Era',
+		  badge: 'The Beginning',
+		  shortDesc: 'Every great story has a beginning. And hers started in a little corner of Maharashtra.',
+		  longMessage: `Every great story has a beginning. And hers started in a little corner of Maharashtra.\n\nTera bachpan, teri masti, teri saari shararatein aur teri poori upbringing Solapur mein hui. Wahi tera ghar tha, wahi teri duniya. Lekin life ne tere liye kuch aur hi plan kar rakha tha.\n\nEk din tu Solapur se Karnataka aa pahunchi, apni PUC journey shuru karne. Naya sheher, naye log, naya environment… aur in sabke beech ek ladki apne hi andaaz mein sabka attention kheench rahi thi.\n\nTera woh Solapur wala attitude, Kannada bolne ki adorable si koshish, woh nakhre aur tera bindass nature! Tujhe toh pata hai hi,tere isi andaaz ne college ke kitne hi seniors aur ladkon ka attention toh le hi liya tha!\n\nLekin baat sirf attention ki nahi thi. Us chhote se PUC phase mein tune kuch aise log banaye, kuch aisi memories collect ki aur kuch aise experiences liye jo shayad aaj bhi tere chehre par smile le aate honge. Wahin se teri personality ka ek aur beautiful side saamne aaya — ek aisi ladki jo jahan jaati hai, wahan apni ek alag pehchaan chhod jaati hai.\n\nAnd little did everyone know… this was just the beginning.`,
+		  highlights: ['Solapur Roots', 'PUC College Days', 'Bindass Nature'],
+		  thumbnailUrl: 'https://lh3.googleusercontent.com/d/1iEKeib7-AGbKIT7Hip38FxrL3UlfuCL5',
+		  // PASTE YOUR EPISODE 1 YOUTUBE LINK BELOW:
+		  videoUrl: 'https://youtu.be/7Y6MxC4ogls?si=EvwUvV-g0lltdXUe'
+		},
+		{
+		  number: 2,
+		  title: 'Madam President: Born to Lead',
+		  duration: '22m • Engineering Era',
+		  badge: 'The Rise',
+		  shortDesc: 'Some people attend college to get a degree. Some leave behind a legacy.',
+		  longMessage: `Some people attend college to get a degree. Some leave behind a legacy.\n\nPUC khatam hua, aur tu wapas Maharashtra aa gayi. MH-CET crack kiya, Solapur ke college mein Computer Science choose kiya, aur shuru ho gaya life ka ek naya chapter.\n\nLekin college mein aakar tune sirf lectures, assignments aur exams tak khud ko limited nahi rakha. College fests ho, events ho, activities ho ya kisi bhi responsibility ko handle karna — tu har jagah present!\n\nTera woh hamesha active rehne wala nature, logon se connect karne ki ability aur leadership wali personality dheere-dheere sabke saamne aane lagi. Aur phir ek din… Madam President!\n\nSoch, ek ladki jo kabhi naye sheher mein Kannada bolne ki koshish kar rahi thi, ab apne college ko lead kar rahi thi. Life kitni jaldi badalti hai na?\n\nLekin iss episode ka twist abhi baaki tha. College ke final chapters ke saath-saath tune apni professional life ka bhi pehla darwaza khol diya — graduation ke aas-paas hi apna pehla corporate SDE job secure kar liya!\n\nA degree, leadership experience, countless memories and your first corporate win. Ek taraf college life khatam ho rahi thi, toh doosri taraf ek nayi duniya tera intezaar kar rahi thi. Aur tujhe bhi kahan pata tha ki aage ki story itni unpredictable hone wali hai!`,
+		  highlights: ['College President', 'CS Engineering', 'First Corporate Win'],
+		  thumbnailUrl: 'https://lh3.googleusercontent.com/d/1PXFELsszcjcmuEEH8u1u1qb-JX5nmUMq',
+		  // PASTE YOUR EPISODE 2 YOUTUBE LINK BELOW (or keep sample MP4):
+		  videoUrl: 'https://youtu.be/TiiLu9N0Krk?si=8lJgDMTCQAO4nZYu'
+		},
+		{
+		  number: 3,
+		  title: 'The Storm, The Silence & The American Dream',
+		  duration: '20m • Lockdown & USA MS',
+		  badge: 'The Turning Point',
+		  shortDesc: 'Not every chapter of life is beautiful. Some chapters teach us how to survive.',
+		  longMessage: `Not every chapter of life is beautiful. Some chapters teach us how to survive.\n\nPhir aaya COVID. Ek aisa waqt jab poori duniya ruk si gayi thi. Lockdown, work from home, uncertainty, loneliness… aur life ke woh emotions jinse shayad tu kabhi itni closely mili bhi nahi thi.\n\nCareer ka pressure, relationships, love, heartbreak, personal struggles… life ne ek hi waqt mein bahut kuch saamne laakar rakh diya. Kuch experiences ne tujhe khush kiya, kuch ne confuse kiya, aur kuch ne andar tak hurt bhi kiya. Ek waqt aisa bhi aaya jab shayad tujhe khud samajh nahi aa raha tha ki life kis direction mein ja rahi hai. Bahar se sab normal dikh raha tha, lekin andar kitni saari battles chal rahi thi, woh sirf tu hi jaanti thi.\n\nAur honestly, shayad wahi waqt tha jab life ne tera sabse difficult test liya. Lekin ek cheez thi jo kabhi khatam nahi hui — tera khud par bharosa karne ka woh chhota sa hissa. Thak gayi hogi, royi bhi hogi, kabhi give up karne ka mann bhi hua hoga. Lekin tune khud ko ek aur chance diya. Exams diye, countless preparations ki, struggles face kiye, family ka support liya aur dheere-dheere apne sapne ki taraf badhti rahi.\n\nAur phir woh din aaya… Jis sapne ko lekar tune itni mehnat ki thi, woh finally reality ban gaya. USA. Ek flight, ek naya desh, ek nayi duniya aur apne sapnon ki taraf ek bahut bada kadam. That wasn’t just a flight to America. It was proof that no matter how difficult life gets, you can still choose to begin again.`,
+		  highlights: ['COVID Struggles', 'Inner Resilience', 'The American Dream'],
+		  thumbnailUrl: 'https://lh3.googleusercontent.com/d/1-mN1I29nMfR97aS_jatAPADAZVzYKYNE',
+		  videoUrl: 'https://youtu.be/H8qIc2y6B2g?si=MoNLYBR8DTw8qieL'
+		},
+		{
+		  number: 4,
+		  title: 'Miles Away, Still Unstoppable',
+		  duration: '26m • MS Life & Resilience',
+		  badge: 'The Achievement',
+		  shortDesc: 'New country. No familiar faces. A thousand unknowns. And one girl determined to make it.',
+		  longMessage: `New country. No familiar faces. A thousand unknowns. And one girl determined to make it.\n\nUSA pahunchna sapne jaisa tha, lekin uss sapne ko jeena utna easy nahi tha. Apne ghar se door, family se door, familiar logon se door… ek naye desh mein apni life zero se build karna koi chhoti baat nahi hoti.\n\nKabhi studies ka pressure, kabhi assignments aur deadlines, kabhi career ki tension, aur kabhi bas ghar ki yaad. Lekin tujhe toh rukna aata hi nahi tha! Tune padhai bhi ki, naye log banaye, naye experiences liye, masti ki, travel kiya, enjoy kiya aur apne aas-paas ki duniya ko explore bhi kiya. Aur sabse interesting baat? Tu wahan bhi wahi thi — full of energy, always involved, taking initiatives and making your presence felt.\n\nAur phir woh moment aaya jiske liye itne saalon ki mehnat thi. YOU GRADUATED! 🎓\n\nWoh graduation cap sirf ek degree ka symbol nahi tha. Usmein teri late-night studies thi, tere sacrifices the, family ki prayers thi, tere difficult days the aur woh saari chhoti-badi victories thi jo shayad kisi aur ko kabhi dikhayi bhi nahi di. India se itni door aakar apne dum par Masters complete karna — that’s something you should always be proud of.\n\nYou didn’t just earn a Master’s degree. You proved to yourself that you belong wherever your dreams take you.`,
+		  highlights: ['USA Journey', 'Zero to One', 'Master’s Graduate 🎓'],
+		  thumbnailUrl: 'https://lh3.googleusercontent.com/d/12zrGsMAIo7bEbkuEe_chBuM6OPldDnaz',
+		  videoUrl: 'https://youtu.be/bUOGtJDNm4k?si=ynDKuiUYZm9oI0lW'
+		},
+		{
+		  number: 5,
+		  title: 'The Picture Is Still Not Over',
+		  duration: '30m • Current Job Hunt & Comeback',
+		  badge: 'Not The End ★',
+		  shortDesc: 'Every successful story has its struggles. But the best stories never end where things get difficult.',
+		  longMessage: `Every successful story has its struggles. But the best stories never end where things get difficult.\n\nGraduation ke baad laga hoga ki ab toh life ka next chapter aur bhi exciting hone wala hai. Dream companies, top-tier opportunities, ek amazing career… lekin life kabhi-kabhi apni script khud likhti hai. Job market easy nahi tha, uncertainty thi. Lekin tune apne aap ko ek jagah rukne nahi diya — internships ki, freelancing ki, naye skills seekhe, aur finally Bio-Rad mein SDE role crack kiya!\n\nLekin life ki script mein kuch unexpected twists abhi bhi baaki the. Kuch circumstances aise bane ki tujhe wahan se bhi move on karna pada. Aur aaj phir ek baar tu life ke uss crossroads par khadi hai, jahan se kabhi tune India se USA ki journey shuru ki thi. Shayad abhi sab kuch clear nahi hai, par listen… Please don’t let your current situation make you question your entire journey.\n\nTu wohi ladki hai jisne Solapur se safar shuru kiya, Karnataka mein jagah banayi, College President bani, American dream achieve kiya, aur har setback ke baad khud ko dobara sambhala. Toh aaj agar life ne ek aur plot twist diya hai, toh kya hua?\n\nTeri story ka best part shayad abhi likha hi nahi gaya hai. Bas ek request hai — apni woh smile kabhi mat khona, apni energy kabhi kam mat hone dena, aur khud ko kabhi kisi job, company ya situation se define mat karna.\n\nAnd whenever life gets difficult, just remember…\n“Picture abhi baaki hai, mere dost!”\n\nTO BE CONTINUED… ❤️`,
+		  highlights: ['Bio-Rad SDE', 'Unstoppable Spirit', 'Happy Birthday Shreya!'],
+		  thumbnailUrl: 'https://lh3.googleusercontent.com/d/18q7pCWdw9efKYz1JyVAMNun9fxp0zLNa',
+		  videoUrl: 'https://youtu.be/T6F55160oJE?si=OtM3vbNtnuEaVXMx'
+		}
+	  ]
+	};
+
+	/* =====================================================================
+	   2. STATE & INITIALIZATION
+	   ===================================================================== */
+	let currentEpisodeIndex = 0;
+	let isVisualFallbackMode = false;
+	let audioCtx = null;
+
+	window.onload = function () {
+	  renderBrandText();
+	  renderPosterSlices();
+	  renderEpisodesGrid();
+	  renderErasMiniGallery();
+	  renderBirthdayMainLetter();
+	  initKeyboardShortcuts();
+	};
+
+	function renderBrandText() {
+	  const firstLetter = CONFIG.nameLetters[0] || 'S';
+	  const fullName = CONFIG.fullName.toUpperCase();
+
+	  document.title = `${fullName} • A Netflix Birthday Original`;
+	  document.getElementById('poster-badge-letter').textContent = firstLetter;
+	  document.getElementById('poster-main-title').textContent = `THE EVOLUTION OF ${fullName}`;
+	  document.getElementById('poster-sound-hint').textContent = `Turn sound on for the Netflix "${firstLetter}" Birthday Intro`;
+	  document.getElementById('nav-s-letter').textContent = firstLetter;
+	  document.getElementById('nav-brand-name').textContent = `${fullName}FLIX`;
+	  document.getElementById('gallery-name-heading').textContent = fullName;
+	  document.getElementById('letter-modal-heading').textContent = `DEAR ${fullName}, READ THIS WHENEVER TIMES FEEL HEAVY`;
+	  document.getElementById('letter-modal-signoff').textContent = CONFIG.signOff;
+
+	  if (CONFIG.posterSlices[5] && CONFIG.posterSlices[5].imageUrl) {
+		document.getElementById('hero-backdrop-img').src = CONFIG.posterSlices[5].imageUrl;
+	  }
+	}
+
+	/* =====================================================================
+	   3. RENDER SCREEN 1: 6-PART HERO POSTER
+	   ===================================================================== */
+	function renderPosterSlices() {
+	  const container = document.getElementById('poster-slices-container');
+	  container.innerHTML = '';
+
+	  CONFIG.posterSlices.forEach((slice, index) => {
+		const letter = CONFIG.nameLetters[index] || slice.letter || '';
+		const focusPos = slice.faceFocus || '50% 18%';
+		const baseScale = slice.faceScale || 1.05;
+
+		const sliceEl = document.createElement('div');
+		sliceEl.className = 'poster-slice group';
+		sliceEl.onclick = () => toggleActiveSlice(index);
+
+		sliceEl.innerHTML = `
+		  <img
+			src="${slice.imageUrl}"
+			alt="${slice.eraLabel}"
+			class="slice-bg"
+			style="object-position: ${focusPos}; --slice-scale: ${baseScale};"
+			onerror="this.src='https://placehold.co/600x1200/181818/E50914?text=${encodeURIComponent(slice.eraLabel)}'"
+		  />
+		  <div class="slice-vignette"></div>
+
+		  <!-- Top Era Header on each slice -->
+		  <div class="absolute top-14 sm:top-20 inset-x-0 z-10 flex flex-col items-center text-center px-1 pointer-events-none">
+			<span class="text-[9px] sm:text-xs font-bold tracking-[0.22em] text-[#E50914] uppercase">
+			  ${slice.eraNumber}
+			</span>
+			<span class="text-[11px] sm:text-sm font-semibold text-white mt-0.5 drop-shadow">
+			  ${slice.eraLabel}
+			</span>
+		  </div>
+
+		  <!-- Center Giant Letter + Hover-Only Pill Caption -->
+		  <div class="absolute inset-0 z-10 flex flex-col items-center justify-center px-2 pointer-events-none">
+			<span class="slice-letter">${letter}</span>
+
+			<div class="slice-caption-pill mt-2 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-center shadow-lg max-w-[200px]">
+			  <span class="block text-[10px] sm:text-xs font-medium text-neutral-100 leading-snug">
+				${slice.caption}
+			  </span>
+			</div>
+		  </div>
+		`;
+
+		container.appendChild(sliceEl);
+	  });
+	}
+	
+	function toggleActiveSlice(index) {
+	  const slices = document.querySelectorAll('.poster-slice');
+	  slices.forEach((el, idx) => {
+		if (idx === index) {
+		  el.classList.toggle('slice-active');
+		} else {
+		  el.classList.remove('slice-active');
+		}
+	  });
+	}
+
+	/* =====================================================================
+	   4. SYNTHESIZED WEB AUDIO "TUDUM" SOUND + INTRO TRANSITION
+	   ===================================================================== */
+	function playNetflixTudumSound() {
+	  const audioEl = document.getElementById('tudum-audio');
+	  if (audioEl && audioEl.querySelector('source')) {
+		audioEl.currentTime = 0;
+		audioEl.play().catch(() => {});
+	  }
+
+	  try {
+		const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+		if (!AudioContextClass) return;
+		if (!audioCtx) audioCtx = new AudioContextClass();
+		if (audioCtx.state === 'suspended') audioCtx.resume();
+
+		const now = audioCtx.currentTime;
+
+		function triggerImpact(startTime, startFreq, endFreq, duration, gainLevel) {
+		  const osc = audioCtx.createOscillator();
+		  const gain = audioCtx.createGain();
+		  osc.type = 'sine';
+		  osc.frequency.setValueAtTime(startFreq, startTime);
+		  osc.frequency.exponentialRampToValueAtTime(endFreq, startTime + duration);
+
+		  gain.gain.setValueAtTime(0.001, startTime);
+		  gain.gain.linearRampToValueAtTime(gainLevel, startTime + 0.015);
+		  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+		  osc.connect(gain);
+		  gain.connect(audioCtx.destination);
+		  osc.start(startTime);
+		  osc.stop(startTime + duration);
+
+		  const clickOsc = audioCtx.createOscillator();
+		  const clickGain = audioCtx.createGain();
+		  clickOsc.type = 'triangle';
+		  clickOsc.frequency.setValueAtTime(startFreq * 2.1, startTime);
+		  clickOsc.frequency.exponentialRampToValueAtTime(40, startTime + 0.12);
+
+		  clickGain.gain.setValueAtTime(gainLevel * 0.45, startTime);
+		  clickGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
+
+		  clickOsc.connect(clickGain);
+		  clickGain.connect(audioCtx.destination);
+		  clickOsc.start(startTime);
+		  clickOsc.stop(startTime + 0.12);
+		}
+
+		triggerImpact(now + 0.04, 135, 42, 0.34, 0.85);
+		triggerImpact(now + 0.36, 175, 34, 1.45, 1.0);
+
+		const chordFreqs = [146.83, 220.0, 293.66, 369.99, 440.0, 587.33];
+		chordFreqs.forEach((freq, idx) => {
+		  const osc = audioCtx.createOscillator();
+		  const gain = audioCtx.createGain();
+		  osc.type = idx % 2 === 0 ? 'sawtooth' : 'triangle';
+		  osc.frequency.setValueAtTime(freq, now + 0.38);
+
+		  const filter = audioCtx.createBiquadFilter();
+		  filter.type = 'lowpass';
+		  filter.frequency.setValueAtTime(900, now + 0.38);
+		  filter.frequency.exponentialRampToValueAtTime(2400, now + 1.4);
+		  filter.frequency.exponentialRampToValueAtTime(400, now + 2.8);
+
+		  gain.gain.setValueAtTime(0.0001, now + 0.38);
+		  gain.gain.linearRampToValueAtTime(0.055, now + 0.65);
+		  gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.85);
+
+		  osc.connect(filter);
+		  filter.connect(gain);
+		  gain.connect(audioCtx.destination);
+
+		  osc.start(now + 0.38);
+		  osc.stop(now + 2.9);
+		});
+	  } catch (err) {
+		console.warn('Web Audio API synth skipped:', err);
+	  }
+	}
+
+	function startSIntroTransition() {
+	  const posterGrid = document.getElementById('poster-slices-container');
+	  const ctaWrapper = document.getElementById('poster-cta-wrapper');
+	  const topBar = document.getElementById('poster-top-bar');
+	  const screenPoster = document.getElementById('screen-poster');
+
+	  ctaWrapper.style.opacity = '0';
+	  if (topBar) topBar.style.opacity = '0';
+	  posterGrid.classList.add('converging-s');
+
+	  setTimeout(() => {
+		screenPoster.classList.add('hidden');
+		runSLogoSequence();
+	  }, 680);
+	}
+
+	function runSLogoSequence() {
+	  const screenIntro = document.getElementById('screen-intro');
+	  const sLogoWrapper = document.getElementById('s-logo-wrapper');
+	  const introCaption = document.getElementById('intro-caption');
+	  const spectrumStreaks = document.getElementById('spectrum-streaks');
+	  const screenHub = document.getElementById('screen-hub');
+
+	  screenIntro.classList.remove('hidden');
+	  sLogoWrapper.classList.remove('animate-s-draw', 's-zoom-in');
+	  spectrumStreaks.classList.remove('spectrum-active');
+	  introCaption.style.opacity = '0';
+
+	  void sLogoWrapper.offsetWidth;
+
+	  playNetflixTudumSound();
+	  sLogoWrapper.classList.add('animate-s-draw');
+
+	  setTimeout(() => {
+		introCaption.style.opacity = '1';
+	  }, 550);
+
+	  setTimeout(() => {
+		sLogoWrapper.classList.add('s-zoom-in');
+		spectrumStreaks.classList.add('spectrum-active');
+	  }, 1850);
+
+	  setTimeout(() => {
+		screenIntro.classList.add('hidden');
+		screenHub.classList.remove('hidden');
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	  }, 2950);
+	}
+
+	function replaySIntro() {
+	  document.getElementById('screen-hub').classList.add('hidden');
+	  runSLogoSequence();
+	}
+
+	function returnToPoster() {
+	  const screenPoster = document.getElementById('screen-poster');
+	  const screenHub = document.getElementById('screen-hub');
+	  const posterGrid = document.getElementById('poster-slices-container');
+	  const ctaWrapper = document.getElementById('poster-cta-wrapper');
+	  const topBar = document.getElementById('poster-top-bar');
+
+	  screenHub.classList.add('hidden');
+	  posterGrid.classList.remove('converging-s');
+	  ctaWrapper.style.opacity = '1';
+	  if (topBar) topBar.style.opacity = '1';
+	  screenPoster.classList.remove('hidden');
+	}
+
+	/* =====================================================================
+	   5. RENDER SCREEN 3: THE 5 EPISODES & 6 ERAS GALLERY
+	   ===================================================================== */
+	function renderEpisodesGrid() {
+	  const grid = document.getElementById('episodes-grid');
+	  grid.innerHTML = '';
+
+	  CONFIG.episodes.forEach((ep, index) => {
+		const card = document.createElement('article');
+		card.className = 'episode-card group bg-[#1f1f1f] rounded-xl overflow-hidden border border-white/10 flex flex-col justify-between cursor-pointer';
+		card.onclick = () => openEpisodeModal(index);
+
+		card.innerHTML = `
+		  <div>
+			<!-- Episode Thumbnail with Play Overlay -->
+			<div class="relative aspect-video bg-black overflow-hidden">
+			  <img
+				src="${ep.thumbnailUrl}"
+				alt="${ep.title}"
+				class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-105"
+				onerror="this.src='https://placehold.co/800x450/1f1f1f/E50914?text=Episode+${ep.number}'"
+			  />
+			  <div class="absolute inset-0 bg-gradient-to-t from-[#1f1f1f] via-transparent to-black/50"></div>
+
+			  <!-- Top Left Episode Number Badge -->
+			  <div class="absolute top-3 left-3 flex items-center gap-2">
+				<span class="px-2.5 py-1 rounded bg-black/80 backdrop-blur-md text-white font-bebas text-lg tracking-wider border border-white/15">
+				  EPISODE ${ep.number}
+				</span>
+				<span class="px-2.5 py-0.5 rounded-full bg-[#E50914] text-white text-[11px] font-bold">
+				  ${ep.badge}
+				</span>
+			  </div>
+
+			  <!-- Center Play Button Overlay -->
+			  <div class="absolute inset-0 flex items-center justify-center">
+				<div class="w-14 h-14 rounded-full bg-black/65 group-hover:bg-[#E50914] text-white flex items-center justify-center border-2 border-white/80 group-hover:border-white group-hover:scale-110 transition-all duration-300 shadow-xl">
+				  <svg class="w-6 h-6 ml-0.5 fill-current" viewBox="0 0 24 24">
+					<path d="M8 5v14l11-7z" />
+				  </svg>
+				</div>
+			  </div>
+
+			  <!-- Netflix Red Watched Progress Bar at bottom of thumbnail -->
+			  <div class="absolute bottom-0 inset-x-0 h-1 bg-white/20">
+				<div class="h-full bg-[#E50914]" style="width: ${Math.min(100, (index + 1) * 20)}%"></div>
+			  </div>
+			</div>
+
+			<!-- Episode Text Info -->
+			<div class="p-5">
+			  <div class="flex items-center justify-between text-xs text-neutral-400 mb-1.5">
+				<span class="font-semibold text-[#46d369]">99% Match</span>
+				<span>${ep.duration}</span>
+			  </div>
+
+			  <h3 class="font-bebas text-2xl tracking-wide text-white group-hover:text-red-400 transition-colors">
+				${ep.number}. ${ep.title}
+			  </h3>
+
+			  <p class="mt-2 text-xs sm:text-sm text-neutral-300 line-clamp-3 leading-relaxed">
+				${ep.shortDesc}
+			  </p>
+			</div>
+		  </div>
+
+		  <!-- Card Footer -->
+		  <div class="px-5 pb-4 pt-2 border-t border-white/5 flex items-center justify-between text-xs">
+			<span class="text-neutral-400 flex items-center gap-1.5">
+			  <span class="w-2 h-2 rounded-full bg-red-500"></span>
+			  Includes Video & Story Note
+			</span>
+			<span class="font-semibold text-white group-hover:text-red-400 transition-colors">
+			  Watch Now →
+			</span>
+		  </div>
+		`;
+
+		grid.appendChild(card);
+	  });
+	}
+
+	function renderErasMiniGallery() {
+	  const miniGrid = document.getElementById('eras-mini-grid');
+	  miniGrid.innerHTML = '';
+
+	  CONFIG.posterSlices.forEach((slice, idx) => {
+		const letter = CONFIG.nameLetters[idx] || slice.letter;
+		const focusPos = slice.faceFocus || '50% 18%';
+		const baseScale = slice.faceScale || 1.05;
+
+		const item = document.createElement('div');
+		item.className = 'group relative aspect-[3/4] w-full rounded-lg overflow-hidden border border-white/10 bg-[#1a1a1a]';
+
+		item.innerHTML = `
+		  <img
+			src="${slice.imageUrl}"
+			alt="${slice.eraLabel}"
+			style="object-position: ${focusPos}; transform: scale(${baseScale}); transform-origin: ${focusPos};"
+			class="w-full h-full object-cover group-hover:scale-125 transition-transform duration-500 brightness-80 group-hover:brightness-100"
+			onerror="this.src='https://placehold.co/400x600/1f1f1f/E50914?text=${encodeURIComponent(letter)}'"
+		  />
+		  <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent"></div>
+		  <div class="absolute top-2.5 left-2.5 w-8 h-8 rounded bg-[#E50914] text-white font-bebas text-xl flex items-center justify-center shadow">
+			${letter}
+		  </div>
+		  <div class="absolute bottom-3 inset-x-3">
+			<p class="text-[10px] font-bold uppercase tracking-wider text-red-400">${slice.eraNumber}</p>
+			<p class="text-xs sm:text-sm font-bold text-white leading-snug">${slice.eraLabel}</p>
+		  </div>
+		`;
+		miniGrid.appendChild(item);
+	  });
+	}
+
+	function renderBirthdayMainLetter() {
+	  const container = document.getElementById('letter-modal-body');
+	  container.innerHTML = CONFIG.birthdayMainLetter
+		.map(paragraph => `<p>${paragraph}</p>`)
+		.join('');
+	}
+
+	/* =====================================================================
+	   6. EPISODE MODAL & YOUTUBE / VIDEO / MEMORY PLAYER LOGIC
+	   ===================================================================== */
+	// Automatically detects YouTube watch, short, or share links and converts them to embed format
+	function getYouTubeEmbedUrl(url) {
+	  if (!url) return null;
+	  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+	  const match = url.match(regExp);
+	  return (match && match[2].length === 11)
+		? `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`
+		: null;
+	}
+
+	function openEpisodeModal(index) {
+	  currentEpisodeIndex = index;
+	  const ep = CONFIG.episodes[index];
+	  if (!ep) return;
+
+	  const modal = document.getElementById('episode-modal');
+	  const videoPlayer = document.getElementById('modal-video-player');
+	  const ytPlayer = document.getElementById('modal-youtube-player');
+	  const visualFallback = document.getElementById('modal-visual-fallback');
+
+	  document.getElementById('modal-ep-indicator').textContent = `Now Playing: Episode ${ep.number} of ${CONFIG.episodes.length}`;
+	  document.getElementById('modal-ep-title').textContent = `${ep.number}. ${ep.title}`;
+	  document.getElementById('modal-ep-duration').textContent = ep.duration;
+	  document.getElementById('modal-ep-badge').textContent = ep.badge;
+	  document.getElementById('modal-ep-short').textContent = ep.shortDesc;
+	  document.getElementById('modal-ep-long-message').textContent = ep.longMessage;
+
+	  document.getElementById('modal-fallback-img').src = ep.thumbnailUrl;
+	  document.getElementById('modal-fallback-badge').textContent = `EPISODE ${ep.number} • ${ep.badge}`;
+	  document.getElementById('modal-fallback-title').textContent = ep.title;
+	  document.getElementById('modal-fallback-quote').textContent = `"${ep.shortDesc}"`;
+	  document.getElementById('modal-video-path-hint').textContent = `Configured path: ${ep.videoUrl}`;
+
+	  const highlightsContainer = document.getElementById('modal-ep-highlights');
+	  highlightsContainer.innerHTML = (ep.highlights || [])
+		.map(tag => `<span class="px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-neutral-200 border border-white/10">✨ ${tag}</span>`)
+		.join('');
+
+	  document.getElementById('btn-prev-ep').disabled = index === 0;
+	  document.getElementById('btn-prev-ep').style.opacity = index === 0 ? '0.4' : '1';
+	  document.getElementById('btn-next-ep').innerHTML =
+		index === CONFIG.episodes.length - 1
+		  ? '<span>Replay Ep 1</span><span>↻</span>'
+		  : '<span>Next Episode</span><span>→</span>';
+
+	  isVisualFallbackMode = false;
+	  visualFallback.classList.add('hidden');
+	  document.getElementById('btn-toggle-player-mode').textContent = 'Switch to Interactive Memory Card';
+
+	  const ytEmbedUrl = getYouTubeEmbedUrl(ep.videoUrl);
+
+	  if (ytEmbedUrl) {
+		videoPlayer.pause();
+		videoPlayer.classList.add('hidden');
+		ytPlayer.src = ytEmbedUrl;
+		ytPlayer.classList.remove('hidden');
+	  } else {
+		ytPlayer.src = '';
+		ytPlayer.classList.add('hidden');
+		videoPlayer.classList.remove('hidden');
+		videoPlayer.src = ep.videoUrl;
+		videoPlayer.poster = ep.thumbnailUrl;
+		videoPlayer.onerror = function () {
+		  activateVisualFallbackMode();
+		};
+		videoPlayer.play().catch(() => {});
+	  }
+
+	  modal.classList.remove('hidden');
+	  modal.classList.add('flex');
+	  document.body.style.overflow = 'hidden';
+	}
+
+	function activateVisualFallbackMode() {
+	  isVisualFallbackMode = true;
+	  const videoPlayer = document.getElementById('modal-video-player');
+	  const ytPlayer = document.getElementById('modal-youtube-player');
+	  const visualFallback = document.getElementById('modal-visual-fallback');
+
+	  videoPlayer.pause();
+	  videoPlayer.classList.add('hidden');
+	  ytPlayer.src = '';
+	  ytPlayer.classList.add('hidden');
+
+	  visualFallback.classList.remove('hidden');
+	  document.getElementById('btn-toggle-player-mode').textContent = 'Switch to Video Player';
+	}
+
+	function switchToVideoTag() {
+	  isVisualFallbackMode = false;
+	  const ep = CONFIG.episodes[currentEpisodeIndex];
+	  const videoPlayer = document.getElementById('modal-video-player');
+	  const ytPlayer = document.getElementById('modal-youtube-player');
+	  const visualFallback = document.getElementById('modal-visual-fallback');
+
+	  visualFallback.classList.add('hidden');
+	  document.getElementById('btn-toggle-player-mode').textContent = 'Switch to Interactive Memory Card';
+
+	  const ytEmbedUrl = getYouTubeEmbedUrl(ep ? ep.videoUrl : '');
+	  if (ytEmbedUrl) {
+		videoPlayer.classList.add('hidden');
+		ytPlayer.src = ytEmbedUrl;
+		ytPlayer.classList.remove('hidden');
+	  } else {
+		ytPlayer.src = '';
+		ytPlayer.classList.add('hidden');
+		videoPlayer.classList.remove('hidden');
+		videoPlayer.play().catch(() => {});
+	  }
+	}
+
+	function togglePlayerMode() {
+	  if (isVisualFallbackMode) {
+		switchToVideoTag();
+	  } else {
+		activateVisualFallbackMode();
+	  }
+	}
+
+	function loadCustomEpisodeVideo(event) {
+	  const file = event.target.files && event.target.files[0];
+	  if (!file) return;
+	  const fileUrl = URL.createObjectURL(file);
+	  const videoPlayer = document.getElementById('modal-video-player');
+	  const ytPlayer = document.getElementById('modal-youtube-player');
+	  const visualFallback = document.getElementById('modal-visual-fallback');
+
+	  isVisualFallbackMode = false;
+	  visualFallback.classList.add('hidden');
+	  ytPlayer.src = '';
+	  ytPlayer.classList.add('hidden');
+
+	  videoPlayer.classList.remove('hidden');
+	  videoPlayer.src = fileUrl;
+	  document.getElementById('btn-toggle-player-mode').textContent = 'Switch to Interactive Memory Card';
+	  videoPlayer.play().catch(() => {});
+	}
+
+	function loadCustomEpisodePhoto(event) {
+	  const file = event.target.files && event.target.files[0];
+	  if (!file) return;
+	  const fileUrl = URL.createObjectURL(file);
+	  document.getElementById('modal-fallback-img').src = fileUrl;
+	  activateVisualFallbackMode();
+	}
+
+	function navigateEpisode(direction) {
+	  let nextIdx = currentEpisodeIndex + direction;
+	  if (nextIdx < 0) nextIdx = 0;
+	  if (nextIdx >= CONFIG.episodes.length) nextIdx = 0;
+	  openEpisodeModal(nextIdx);
+	}
+
+	function closeEpisodeModal() {
+	  const modal = document.getElementById('episode-modal');
+	  const videoPlayer = document.getElementById('modal-video-player');
+	  const ytPlayer = document.getElementById('modal-youtube-player');
+
+	  videoPlayer.pause();
+	  ytPlayer.src = '';
+
+	  modal.classList.add('hidden');
+	  modal.classList.remove('flex');
+	  document.body.style.overflow = '';
+	}
+
+	/* =====================================================================
+	   7. BIRTHDAY LETTER & GIFT SURPRISE MODAL LOGIC
+	   ===================================================================== */
+	function openBirthdayLetterModal() {
+	  const modal = document.getElementById('birthday-letter-modal');
+	  modal.classList.remove('hidden');
+	  modal.classList.add('flex');
+	  document.body.style.overflow = 'hidden';
+	}
+
+	function closeBirthdayLetterModal() {
+	  const modal = document.getElementById('birthday-letter-modal');
+	  modal.classList.add('hidden');
+	  modal.classList.remove('flex');
+	  document.body.style.overflow = '';
+	}
+
+	function openGiftModal() {
+	  closeBirthdayLetterModal();
+	  const modal = document.getElementById('gift-modal');
+	  modal.classList.remove('hidden');
+	  modal.classList.add('flex');
+	  document.body.style.overflow = 'hidden';
+	  launchConfetti();
+	}
+
+	function closeGiftModal() {
+	  const modal = document.getElementById('gift-modal');
+	  modal.classList.add('hidden');
+	  modal.classList.remove('flex');
+	  document.body.style.overflow = '';
+	}
+
+	function handleModalBackdropClick(event, modalId) {
+	  if (event.target.id === modalId) {
+		if (modalId === 'episode-modal') closeEpisodeModal();
+		if (modalId === 'birthday-letter-modal') closeBirthdayLetterModal();
+		if (modalId === 'gift-modal') closeGiftModal();
+	  }
+	}
+
+	function initKeyboardShortcuts() {
+	  window.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') {
+		  closeEpisodeModal();
+		  closeBirthdayLetterModal();
+		  closeGiftModal();
+		}
+	  });
+	}
+
+	function triggerBirthdayCheer() {
+	  launchConfetti();
+
+	  const cheers = [
+		`Happy Birthday ${CONFIG.fullName}! Your comeback season starts now! ✨`,
+		`Reminder: You have survived 100% of your toughest days ♥`,
+		`Here's to your strongest, happiest year yet! 🎂`
+	  ];
+	  const randomCheer = cheers[Math.floor(Math.random() * cheers.length)];
+
+	  const toast = document.getElementById('cheer-toast');
+	  document.getElementById('cheer-toast-text').textContent = randomCheer;
+	  toast.classList.remove('hidden');
+	  toast.classList.add('flex');
+
+	  clearTimeout(window.cheerToastTimer);
+	  window.cheerToastTimer = setTimeout(() => {
+		toast.classList.add('hidden');
+		toast.classList.remove('flex');
+	  }, 4200);
+	}
+
+	function launchConfetti() {
+	  const canvas = document.getElementById('confetti-canvas');
+	  const ctx = canvas.getContext('2d');
+	  canvas.width = window.innerWidth;
+	  canvas.height = window.innerHeight;
+
+	  const colors = ['#E50914', '#ffffff', '#ffbe0b', '#ff006e', '#46d369'];
+	  const pieces = Array.from({ length: 90 }, () => ({
+		x: Math.random() * canvas.width,
+		y: Math.random() * canvas.height - canvas.height,
+		w: Math.random() * 10 + 5,
+		h: Math.random() * 6 + 4,
+		color: colors[Math.floor(Math.random() * colors.length)],
+		vy: Math.random() * 4 + 2.5,
+		vx: (Math.random() - 0.5) * 2.5,
+		angle: Math.random() * 360,
+		spin: (Math.random() - 0.5) * 8
+	  }));
+
+	  let frame = 0;
+	  function draw() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		pieces.forEach(p => {
+		  p.y += p.vy;
+		  p.x += p.vx;
+		  p.angle += p.spin;
+
+		  ctx.save();
+		  ctx.translate(p.x, p.y);
+		  ctx.rotate((p.angle * Math.PI) / 180);
+		  ctx.fillStyle = p.color;
+		  ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+		  ctx.restore();
+		});
+
+		frame++;
+		if (frame < 160) {
+		  requestAnimationFrame(draw);
+		} else {
+		  ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
+	  }
+	  draw();
+	}
+  </script>
+</body>
+</html>
